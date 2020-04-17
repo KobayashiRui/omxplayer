@@ -92,13 +92,14 @@ OMXControl::~OMXControl()
     dbus_disconnect();
 }
 
-int OMXControl::init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name)
+int OMXControl::init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name, bool *m_loop)
 {
   int ret = 0;
   clock     = m_av_clock;
   audio     = m_player_audio;
   subtitles = m_player_subtitles;
   reader    = m_omx_reader;
+  loop      = m_loop;
 
   if (dbus_connect(dbus_name) < 0)
   {
@@ -565,6 +566,28 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
         clock->OMXSetSpeed(iSpeed, false, true);
         return KeyConfig::ACTION_PLAY;
       }
+
+      /**********************************************************************************
+      * Daz dbus control: set loop. Will set loop control in player
+      ***********************************************************************************/
+      else if (strcmp(property, "SetLoop")==0)
+      {
+        CLog::Log(LOGWARNING, "BUMBUMBUM" );
+      
+        double set_loop_double=new_property_value;
+        
+        if (set_loop_double == 0)
+          *loop = false;
+        else
+          *loop = true;
+
+        dbus_respond_double(m, set_loop_double);
+        return KeyConfig::ACTION_BLANK;
+      }
+      /**********************************************************************************
+      * End of edit
+      ***********************************************************************************/
+
       //Wrong property
       else
       {

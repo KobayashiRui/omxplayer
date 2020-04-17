@@ -1013,7 +1013,8 @@ int main(int argc, char *argv[])
     &m_player_audio,
     &m_player_subtitles,
     &m_omx_reader,
-    m_dbus_name
+    m_dbus_name,
+    &m_loop
   );
   if (false == m_no_keys)
   {

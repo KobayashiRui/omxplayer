@@ -7,3 +7,6 @@ ffmpeg
 help.h
 keys.h
 patch.flag
+GPATH
+GRTAGS
+GTAGS
