@@ -571,12 +571,10 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
       * Daz dbus control: set loop. Will set loop control in player
       ***********************************************************************************/
       else if (strcmp(property, "SetLoop")==0)
-      {
-        CLog::Log(LOGWARNING, "BUMBUMBUM" );
-      
+      {      
         double set_loop_double=new_property_value;
         
-        if (set_loop_double == 0)
+        if (set_loop_double == 1)
           *loop = false;
         else
           *loop = true;
