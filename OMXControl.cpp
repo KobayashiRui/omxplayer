@@ -437,6 +437,22 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
         dbus_respond_int64(m, dur);
         return KeyConfig::ACTION_BLANK;
       }
+      
+      /**********************************************************************************
+      * Daz dbus control: 
+      Step. Will step the player once.
+      Can only do this way because don't know how to edit the player interface.
+      Will send back '1' then execute step
+      ***********************************************************************************/
+      else if (strcmp(property, "Step")==0)
+      {
+        dbus_respond_double(m, 1);
+        return KeyConfig::ACTION_STEP;
+      }
+      /**********************************************************************************
+      * End of edit
+      ***********************************************************************************/
+
       //Wrong property
       else
       {
