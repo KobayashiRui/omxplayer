@@ -92,7 +92,7 @@ OMXControl::~OMXControl()
     dbus_disconnect();
 }
 
-int OMXControl::init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name, bool *m_loop)
+int OMXControl::init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name, bool *m_loop, bool *m_done)
 {
   int ret = 0;
   clock     = m_av_clock;
@@ -100,6 +100,7 @@ int OMXControl::init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPl
   subtitles = m_player_subtitles;
   reader    = m_omx_reader;
   loop      = m_loop;
+  done      = m_done;
 
   if (dbus_connect(dbus_name) < 0)
   {
@@ -325,10 +326,18 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
         dbus_respond_int64(m, pos);
         return KeyConfig::ACTION_BLANK;
       }
+      /**********************************************************************************
+      * Daz edit: 
+      Added "Done" as a possible response to the playback status.
+      ***********************************************************************************/
       else if (strcmp(property, "PlaybackStatus")==0)
       {
         const char *status;
-        if (clock->OMXIsPaused())
+        if (*done)
+        {
+          status = "Done";
+        }
+        else if (clock->OMXIsPaused())
         {
           status = "Paused";
         }

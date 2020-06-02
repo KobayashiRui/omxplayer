@@ -117,6 +117,7 @@ bool              m_gen_log             = false;
 bool              m_loop                = false;
 bool              m_start_paused        = false;
 bool              m_end_paused          = false;
+bool              m_done                = false;
 
 enum{ERROR=-1,SUCCESS,ONEBYTE};
 
@@ -1026,7 +1027,8 @@ int main(int argc, char *argv[])
     &m_player_subtitles,
     &m_omx_reader,
     m_dbus_name,
-    &m_loop
+    &m_loop,
+    &m_done
   );
   if (false == m_no_keys)
   {
@@ -1810,8 +1812,17 @@ int main(int argc, char *argv[])
       }
       
       if (!m_end_paused)
+      {
         break;
+      }
+      
+      m_done = true;
+
     }
+
+    else
+      m_done = false;
+
 
     if(m_has_video && m_omx_pkt && m_omx_reader.IsActive(OMXSTREAM_VIDEO, m_omx_pkt->stream_index))
     {
