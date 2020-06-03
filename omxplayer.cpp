@@ -1706,9 +1706,9 @@ int main(int argc, char *argv[])
         video_fifo_low = m_has_video && video_fifo < threshold;
         video_fifo_high = !m_has_video || (video_pts != DVD_NOPTS_VALUE && video_fifo > m_threshold);
       }
-      CLog::Log(LOGDEBUG, "Normal M:%.0f (A:%.0f V:%.0f) P:%d A:%.2f V:%.2f/T:%.2f (%d,%d,%d,%d) A:%d%% V:%d%% (%.2f,%.2f)\n", stamp, audio_pts, video_pts, m_av_clock->OMXIsPaused(), 
-        audio_pts == DVD_NOPTS_VALUE ? 0.0:audio_fifo, video_pts == DVD_NOPTS_VALUE ? 0.0:video_fifo, m_threshold, audio_fifo_low, video_fifo_low, audio_fifo_high, video_fifo_high,
-        m_player_audio.GetLevel(), m_player_video.GetLevel(), m_player_audio.GetDelay(), (float)m_player_audio.GetCacheTotal());
+      // CLog::Log(LOGDEBUG, "Normal M:%.0f (A:%.0f V:%.0f) P:%d A:%.2f V:%.2f/T:%.2f (%d,%d,%d,%d) A:%d%% V:%d%% (%.2f,%.2f)\n", stamp, audio_pts, video_pts, m_av_clock->OMXIsPaused(), 
+      //   audio_pts == DVD_NOPTS_VALUE ? 0.0:audio_fifo, video_pts == DVD_NOPTS_VALUE ? 0.0:video_fifo, m_threshold, audio_fifo_low, video_fifo_low, audio_fifo_high, video_fifo_high,
+      //   m_player_audio.GetLevel(), m_player_video.GetLevel(), m_player_audio.GetDelay(), (float)m_player_audio.GetCacheTotal());
 
       // keep latency under control by adjusting clock (and so resampling audio)
       if (m_config_audio.is_live)
@@ -1760,10 +1760,11 @@ int main(int argc, char *argv[])
           else
           {
             CLog::Log(LOGDEBUG, "start-paused(%d)\n", m_start_paused);
-            m_av_clock->OMXResume();
+            // m_av_clock->OMXResume();
             m_Pause=true;
             m_start_paused=false;
-            m_av_clock->OMXPause();
+            // m_av_clock->OMXPause();
+            // m_av_clock->OMXStep();
           } 
         }
       }
@@ -1804,20 +1805,19 @@ int main(int argc, char *argv[])
         OMXClock::OMXSleep(10);
         continue;
       }
-
+      // End of stream
+      m_done = true;
+      
       if (m_loop)
       {
         m_incr = m_loop_from - (m_av_clock->OMXMediaTime() ? m_av_clock->OMXMediaTime() / DVD_TIME_BASE : last_seek_pos);
         continue;
       }
-      
+      // If we're not ending, break here and close the player. Otherwise, don't break and keep looping around 
       if (!m_end_paused)
       {
         break;
       }
-      
-      m_done = true;
-
     }
 
     else
