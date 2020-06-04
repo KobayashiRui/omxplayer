@@ -447,21 +447,6 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
         return KeyConfig::ACTION_BLANK;
       }
       
-      /**********************************************************************************
-      * Daz dbus control: 
-      Step. Will step the player once.
-      Can only do this way because don't know how to edit the player interface.
-      Will send back '1' then execute step
-      ***********************************************************************************/
-      else if (strcmp(property, "Step")==0)
-      {
-        dbus_respond_double(m, 1);
-        return KeyConfig::ACTION_STEP;
-      }
-      /**********************************************************************************
-      * End of edit
-      ***********************************************************************************/
-
       //Wrong property
       else
       {
@@ -593,23 +578,20 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
       }
 
       /**********************************************************************************
-      * Daz dbus control: set loop. Will set loop control in player
+      * Daz dbus control: set end paused. Used to set if the player should pause at the end
       ***********************************************************************************/
-      else if (strcmp(property, "SetLoop")==0)
+      else if (strcmp(property, "SetPauseEnd")==0)
       {      
-        double set_loop_double=new_property_value;
+        double set_pause_end_double=new_property_value;
         
-        if (set_loop_double == 1)
+        if (set_pause_end_double == 1)
           *loop = false;
         else
           *loop = true;
 
-        dbus_respond_double(m, set_loop_double);
+        dbus_respond_double(m, set_pause_end_double);
         return KeyConfig::ACTION_BLANK;
       }
-      /**********************************************************************************
-      * End of edit
-      ***********************************************************************************/
 
       //Wrong property
       else
@@ -899,6 +881,64 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
       return OMXControlResult(KeyConfig::ACTION_SEEK_ABSOLUTE, position);
     }
   }
+
+  /**********************************************************************************
+  * Daz dbus control: set loop. Taken from https://github.com/popcornmix/omxplayer/pull/679/files
+  ***********************************************************************************/
+  else if (dbus_message_is_method_call(m, OMXPLAYER_DBUS_INTERFACE_PLAYER, "SetLoop"))
+  {
+    DBusError error;
+    dbus_error_init(&error);
+
+    bool should_loop;
+    dbus_message_get_args(m, &error, DBUS_TYPE_BOOLEAN, &should_loop, DBUS_TYPE_INVALID);
+
+    if (dbus_error_is_set(&error))
+    {
+      CLog::Log(LOGWARNING, "SetLoop D-Bus Error: %s", error.message );
+      dbus_error_free(&error);
+      dbus_respond_ok(m);
+      return KeyConfig::ACTION_BLANK;
+    }
+    else
+    {
+      dbus_respond_ok(m);
+      return OMXControlResult(KeyConfig::ACTION_SET_LOOP, should_loop);
+    }
+  }
+
+  /**********************************************************************************
+  * Daz dbus control: 
+  Step. Will step the player once.
+  ***********************************************************************************/
+  else if (dbus_message_is_method_call(m, OMXPLAYER_DBUS_INTERFACE_PLAYER, "Step"))
+  {
+    dbus_respond_ok(m);
+    return KeyConfig::ACTION_STEP;
+  }
+
+  else if (dbus_message_is_method_call(m, OMXPLAYER_DBUS_INTERFACE_PLAYER, "SetEndPaused"))
+  {
+    DBusError error;
+    dbus_error_init(&error);
+
+    bool end_paused;
+    dbus_message_get_args(m, &error, DBUS_TYPE_BOOLEAN, &end_paused, DBUS_TYPE_INVALID);
+
+    if (dbus_error_is_set(&error))
+    {
+      CLog::Log(LOGWARNING, "SetEndPaused D-Bus Error: %s", error.message );
+      dbus_error_free(&error);
+      dbus_respond_ok(m);
+      return KeyConfig::ACTION_BLANK;
+    }
+    else
+    {
+      dbus_respond_ok(m);
+      return OMXControlResult(KeyConfig::ACTION_SET_END_PAUSED, end_paused);
+    }
+  }
+
   else if (dbus_message_is_method_call(m, OMXPLAYER_DBUS_INTERFACE_PLAYER, "SetAlpha"))
   {
     DBusError error;

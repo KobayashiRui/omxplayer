@@ -45,6 +45,8 @@ class KeyConfig
         ACTION_PLAY = 36,
         ACTION_CHANGE_FILE = 37,
         ACTION_SET_LAYER = 38,
+        ACTION_SET_LOOP = 39,
+        ACTION_SET_END_PAUSED = 40,
     };
 
     #define KEY_LEFT 0x5b44

@@ -1463,6 +1463,12 @@ int main(int argc, char *argv[])
       case KeyConfig::ACTION_SET_LAYER:
           m_player_video.SetLayer(result.getArg());
           break;
+      case KeyConfig::ACTION_SET_LOOP:
+          m_loop=result.getArg();
+          break;
+      case KeyConfig::ACTION_SET_END_PAUSED:
+          m_end_paused=result.getArg();
+          break;
       case KeyConfig::ACTION_PLAY:
         m_Pause=false;
         if(m_has_subtitle)
@@ -1807,6 +1813,7 @@ int main(int argc, char *argv[])
       }
       // End of stream
       m_done = true;
+      CLog::Log(LOGDEBUG, "Bum done");
       
       if (m_loop)
       {
