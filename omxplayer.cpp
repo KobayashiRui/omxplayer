@@ -1805,12 +1805,21 @@ int main(int argc, char *argv[])
       if (!m_send_eos && m_has_audio)
         m_player_audio.SubmitEOS();
       m_send_eos = true;
+
+      // if (m_player_video.IsEOS()) 
+      // {
+      //   // End of stream
+      //   m_done = true;
+      //   CLog::Log(LOGDEBUG, "Bum done");
+      // }
+
       if ( (m_has_video && !m_player_video.IsEOS()) ||
            (m_has_audio && !m_player_audio.IsEOS()) )
       {
         OMXClock::OMXSleep(10);
         continue;
       }
+      
       // End of stream
       m_done = true;
       CLog::Log(LOGDEBUG, "Bum done");
