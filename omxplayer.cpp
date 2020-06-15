@@ -1765,12 +1765,12 @@ int main(int argc, char *argv[])
           }
           else
           {
+            // Start paused. This runs once, and pauses the video
             CLog::Log(LOGDEBUG, "start-paused(%d)\n", m_start_paused);
-            // m_av_clock->OMXResume();
-            m_Pause=true;
             m_start_paused=false;
-            // m_av_clock->OMXPause();
-            // m_av_clock->OMXStep();
+            m_Pause=true;
+            OMXClock::OMXSleep(100); // Need a small sleep before step (for whatever reason)
+            m_av_clock->OMXStep();
           } 
         }
       }
