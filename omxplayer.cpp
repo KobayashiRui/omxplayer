@@ -1461,7 +1461,20 @@ int main(int argc, char *argv[])
           m_player_video.SetAlpha(result.getArg());
           break;
       case KeyConfig::ACTION_SET_LAYER:
-          m_player_video.SetLayer(result.getArg());
+          int new_layer;
+          int playing_layer;
+          playing_layer = 4;  // This is the playing layer number
+          new_layer = result.getArg();
+          // Daz edit: If we set this layer to the playing layer, it means we want to play
+          // We do that automatically here because it is quicker and more seamless.
+          m_player_video.SetLayer(new_layer);
+          if(new_layer == playing_layer)
+          {
+            // Need a slight delay to allow player to change layer. Experimentation found this works
+            OMXClock::OMXSleep(30); 
+            m_Pause=false;
+          }
+
           break;
       case KeyConfig::ACTION_SET_LOOP:
           m_loop=result.getArg();
@@ -1816,7 +1829,7 @@ int main(int argc, char *argv[])
       if ( (m_has_video && !m_player_video.IsEOS()) ||
            (m_has_audio && !m_player_audio.IsEOS()) )
       {
-        OMXClock::OMXSleep(10);
+        OMXClock::OMXSleep(1);
         continue;
       }
       
