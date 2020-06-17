@@ -1784,12 +1784,6 @@ int main(int argc, char *argv[])
             m_Pause=true;
             OMXClock::OMXSleep(100); // Need a small sleep before step (for whatever reason)
             m_av_clock->OMXStep();
-            // Bare with me for this utter stupidness: if both is chosen for audio output, there was a "click" sound.
-            // I have no idea why. All I do know is resetting the stream (or something i dunno) fixed it. I can only seem 
-            // to do that by seeking back past 0. Since this is the start, we can do that here, and it resets, removing the
-            // click. 
-            // I dunno man I can't find anything about this online. Am I the only one? There are so many annoying quirks in this shit.
-            m_incr = -1;
           } 
         }
       }
