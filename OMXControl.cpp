@@ -288,8 +288,18 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
     //Player interface:
     else if (strcmp(interface, OMXPLAYER_DBUS_INTERFACE_PLAYER)==0)
     {
+      /**********************************************************************************
+      * Daz edit: 
+      Added "IsDone" as a property to check
+      ***********************************************************************************/
+      if (strcmp(property, "IsDone")==0)
+      {
+        dbus_respond_boolean(m, *done);
+        return KeyConfig::ACTION_BLANK;
+      }
+
       //MPRIS2 properties:
-      if (strcmp(property, "CanGoNext")==0)
+      else if (strcmp(property, "CanGoNext")==0)
       {
         dbus_respond_boolean(m, 0);
         return KeyConfig::ACTION_BLANK;
@@ -326,18 +336,10 @@ OMXControlResult OMXControl::handle_event(DBusMessage *m)
         dbus_respond_int64(m, pos);
         return KeyConfig::ACTION_BLANK;
       }
-      /**********************************************************************************
-      * Daz edit: 
-      Added "Done" as a possible response to the playback status.
-      ***********************************************************************************/
       else if (strcmp(property, "PlaybackStatus")==0)
       {
         const char *status;
-        if (*done)
-        {
-          status = "Done";
-        }
-        else if (clock->OMXIsPaused())
+        if (clock->OMXIsPaused())
         {
           status = "Paused";
         }
