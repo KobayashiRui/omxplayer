@@ -1471,7 +1471,7 @@ int main(int argc, char *argv[])
           if(new_layer == playing_layer)
           {
             // Need a slight delay to allow player to change layer. Experimentation found this works
-            OMXClock::OMXSleep(33); 
+            OMXClock::OMXSleep(30); 
             m_Pause=false;
           }
 
@@ -1819,12 +1819,12 @@ int main(int argc, char *argv[])
         m_player_audio.SubmitEOS();
       m_send_eos = true;
 
-      // if (m_player_video.IsEOS()) 
-      // {
-      //   // End of stream
-      //   m_done = true;
-      //   CLog::Log(LOGDEBUG, "Bum done");
-      // }
+      if (m_player_video.IsEOS()) 
+      {
+        // End of stream
+        m_done = true;
+        CLog::Log(LOGDEBUG, "Bum done");
+      }
 
       if ( (m_has_video && !m_player_video.IsEOS()) ||
            (m_has_audio && !m_player_audio.IsEOS()) )
@@ -1833,9 +1833,9 @@ int main(int argc, char *argv[])
         continue;
       }
       
-      // End of stream
-      m_done = true;
-      CLog::Log(LOGDEBUG, "Bum done");
+      // // End of stream
+      // m_done = true;
+      // CLog::Log(LOGDEBUG, "Bum done");
       
       if (m_loop)
       {
