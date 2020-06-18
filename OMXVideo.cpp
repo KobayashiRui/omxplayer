@@ -740,7 +740,7 @@ int COMXVideo::Decode(uint8_t *pData, int iSize, double dts, double pts)
       CLog::Log(LOGDEBUG, "OMXVideo::Decode VDec : setStartTime %f\n", (pts == DVD_NOPTS_VALUE ? 0.0 : pts) / DVD_TIME_BASE);
       m_setStartTime = false;
     }
-    if (pts == DVD_NOPTS_VALUE && dts == DVD_NOPTS_VALUE)
+    else if (pts == DVD_NOPTS_VALUE && dts == DVD_NOPTS_VALUE)
       nFlags |= OMX_BUFFERFLAG_TIME_UNKNOWN;
     else if (pts == DVD_NOPTS_VALUE)
       nFlags |= OMX_BUFFERFLAG_TIME_IS_DTS;
