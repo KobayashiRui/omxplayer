@@ -1465,16 +1465,19 @@ int main(int argc, char *argv[])
           int playing_layer;
           playing_layer = 4;  // This is the playing layer number
           new_layer = result.getArg();
-          // Daz edit: If we set this layer to the playing layer, it means we want to play
-          // We do that automatically here because it is quicker and more seamless.
-          m_player_video.SetLayer(new_layer);
+          // Check video is playing. If only audio, when setting the layer, omxplayer crashes out
+          if (m_has_video)
+          {
+            // Daz edit: If we set this layer to the playing layer, it means we want to play
+            // We do that automatically here because it is quicker and more seamless.
+            m_player_video.SetLayer(new_layer);
+          }
           if(new_layer == playing_layer)
           {
             // Need a slight delay to allow player to change layer. Experimentation found this works
             OMXClock::OMXSleep(30); 
             m_Pause=false;
           }
-
           break;
       case KeyConfig::ACTION_SET_LOOP:
           m_loop=result.getArg();
@@ -1819,12 +1822,12 @@ int main(int argc, char *argv[])
         m_player_audio.SubmitEOS();
       m_send_eos = true;
 
-      if (m_player_video.IsEOS()) 
-      {
-        // End of stream
-        m_done = true;
-        CLog::Log(LOGDEBUG, "Bum done");
-      }
+      // if (m_player_video.IsEOS()) 
+      // {
+      //   // End of stream
+      //   m_done = true;
+      //   CLog::Log(LOGDEBUG, "Bum done");
+      // }
 
       if ( (m_has_video && !m_player_video.IsEOS()) ||
            (m_has_audio && !m_player_audio.IsEOS()) )
@@ -1833,9 +1836,9 @@ int main(int argc, char *argv[])
         continue;
       }
       
-      // // End of stream
-      // m_done = true;
-      // CLog::Log(LOGDEBUG, "Bum done");
+      // End of stream
+      m_done = true;
+      CLog::Log(LOGDEBUG, "Bum done");
       
       if (m_loop)
       {
