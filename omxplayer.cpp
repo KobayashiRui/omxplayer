@@ -1032,7 +1032,6 @@ int main(int argc, char *argv[])
     &m_player_subtitles,
     &m_omx_reader,
     m_dbus_name,
-    &m_loop,
     &m_done
   );
   if (false == m_no_keys)
@@ -1485,7 +1484,8 @@ int main(int argc, char *argv[])
           }
           break;
       case KeyConfig::ACTION_SET_LOOP:
-          m_loop=result.getArg();
+          m_loop = result.getArg();
+          CLog::Log(LOGDEBUG, m_loop ? "loop true" : "loop false");
           break;
       case KeyConfig::ACTION_SET_END_PAUSED:
           m_end_paused=result.getArg();
@@ -1817,66 +1817,75 @@ int main(int argc, char *argv[])
       m_omx_pkt = m_omx_reader.Read();
 
     if(m_omx_pkt)
-    {
       m_send_eos = false;
 
-      if(m_loop) {
-        if(m_omx_pkt->pts != DVD_NOPTS_VALUE) {
-          if(m_omx_pkt->pts < loop_offset) {
-            CLog::Log(LOGDEBUG, "Applying loop-offset to packet's PTS %.0f->%.0f", m_omx_pkt->pts, m_omx_pkt->pts + loop_offset);
-            m_omx_pkt->pts += loop_offset;
-          }
-          if(m_omx_pkt->pts > last_packet_pts)
-            last_packet_pts = m_omx_pkt->pts;
-        }
-        if(m_omx_pkt->dts != DVD_NOPTS_VALUE) {
-          if(m_omx_pkt->dts < loop_offset) {
-            CLog::Log(LOGDEBUG, "Applying loop-offset to packet's DTS %.0f->%.0f", m_omx_pkt->dts, m_omx_pkt->dts + loop_offset);
-            m_omx_pkt->dts += loop_offset;
-          }
-          if(m_omx_pkt->dts > last_packet_dts)
-            last_packet_dts = m_omx_pkt->dts;
-        }
-        last_packet_duration = m_omx_pkt->duration;
-      }  
+    if(m_loop && m_omx_reader.IsEof() && !m_omx_pkt)
+    {
+      // demuxer EOF, but may have not played out data yet
+      if ( (m_has_video && m_player_video.GetCached()) ||
+           (m_has_audio && m_player_audio.GetCached()) )
+      {
+        OMXClock::OMXSleep(10);
+        continue;
+      }
+      CLog::Log(LOGINFO, "EOF detected; looping requested");
+      m_omx_reader.SeekTime(0, AVSEEK_FLAG_BACKWARD, &startpts);
+      m_omx_pkt = m_omx_reader.Read();
+
+      if(m_omx_pkt && last_packet_pts != DVD_NOPTS_VALUE) 
+      {
+        // CLog::Log(LOGDEBUG, "Using last packet's PTS value for loop-offset: %.0f + %.0f", last_packet_pts, last_packet_duration);
+        loop_offset = last_packet_pts + last_packet_duration;
+      }
+      else if(m_omx_pkt && last_packet_dts != DVD_NOPTS_VALUE) 
+      {
+        // CLog::Log(LOGDEBUG, "Using last packet's DTS value for loop-offset: %.0f + %.0f", last_packet_dts, last_packet_duration);
+        loop_offset = last_packet_dts + last_packet_duration;
+      }
+      continue;
     }
 
-    if(m_loop && m_omx_reader.IsEof() && !m_omx_pkt) {
-      CLog::Log(LOGINFO, "EOF detected; looping requested");
-      if(m_omx_reader.SeekTime(0, true, &startpts)) {
-        m_omx_pkt = m_omx_reader.Read();
-        if(m_omx_pkt && last_packet_pts != DVD_NOPTS_VALUE) {
-          CLog::Log(LOGDEBUG, "Using last packet's PTS value for loop-offset: %.0f + %.0f", last_packet_pts, last_packet_duration);
-          loop_offset = last_packet_pts + last_packet_duration;
+    if(m_omx_pkt)
+    {
+       if(m_omx_pkt->pts != DVD_NOPTS_VALUE) {
+        if(m_omx_pkt->pts < loop_offset) {
+          // CLog::Log(LOGDEBUG, "Applying loop-offset to packet's PTS %.0f->%.0f", m_omx_pkt->pts, m_omx_pkt->pts + loop_offset);
+          m_omx_pkt->pts += loop_offset;
         }
-        else if(m_omx_pkt && last_packet_dts != DVD_NOPTS_VALUE) {
-          CLog::Log(LOGDEBUG, "Using last packet's DTS value for loop-offset: %.0f + %.0f", last_packet_dts, last_packet_duration);
-          loop_offset = last_packet_dts + last_packet_duration;
-        }
+        if(m_omx_pkt->pts > last_packet_pts)
+          last_packet_pts = m_omx_pkt->pts;
       }
-    }
+      if(m_omx_pkt->dts != DVD_NOPTS_VALUE) {
+        if(m_omx_pkt->dts < loop_offset) {
+          // CLog::Log(LOGDEBUG, "Applying loop-offset to packet's DTS %.0f->%.0f", m_omx_pkt->dts, m_omx_pkt->dts + loop_offset);
+          m_omx_pkt->dts += loop_offset;
+        }
+        if(m_omx_pkt->dts > last_packet_dts)
+          last_packet_dts = m_omx_pkt->dts;
+      }
+      last_packet_duration = m_omx_pkt->duration;
+    }      
 
     if(m_omx_reader.IsEof() && !m_omx_pkt)
     {
+      // demuxer EOF, but may have not played out data yet
+      if ( (m_has_video && m_player_video.GetCached()) ||
+           (m_has_audio && m_player_audio.GetCached()) )
+      {
+        OMXClock::OMXSleep(10);
+        continue;
+      }
       if (!m_send_eos && m_has_video)
         m_player_video.SubmitEOS();
       if (!m_send_eos && m_has_audio)
         m_player_audio.SubmitEOS();
       m_send_eos = true;
-
       if ( (m_has_video && !m_player_video.IsEOS()) ||
            (m_has_audio && !m_player_audio.IsEOS()) )
       {
-        OMXClock::OMXSleep(1);
+        OMXClock::OMXSleep(10);
         continue;
       }
-      
-      if (m_loop)
-      {
-        // m_incr = m_loop_from - (m_av_clock->OMXMediaTime() ? m_av_clock->OMXMediaTime() / DVD_TIME_BASE : last_seek_pos);
-        continue;
-      }
-
       // End of stream
       m_done = true;
       CLog::Log(LOGDEBUG, "Bum done");
@@ -1887,7 +1896,6 @@ int main(int argc, char *argv[])
         break;
       }
     }
-
     else
       m_done = false;
 

@@ -34,13 +34,12 @@ protected:
   OMXPlayerAudio     *audio;
   OMXReader          *reader;
   OMXPlayerSubtitles *subtitles;
-  bool               *loop;
   bool               *done;
   
 public:
   OMXControl();
   ~OMXControl();
-  int init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name, bool *m_loop, bool *m_done);
+  int init(OMXClock *m_av_clock, OMXPlayerAudio *m_player_audio, OMXPlayerSubtitles *m_player_subtitles, OMXReader *m_omx_reader, std::string& dbus_name, bool *m_done);
   OMXControlResult getEvent();
   void dispatch();
 private:
