@@ -1819,6 +1819,40 @@ int main(int argc, char *argv[])
     if(m_omx_pkt)
       m_send_eos = false;
 
+    if(!m_loop && m_omx_reader.IsEof() && !m_omx_pkt)
+    {
+      // demuxer EOF, but may have not played out data yet
+      if ( (m_has_video && m_player_video.GetCached()) ||
+           (m_has_audio && m_player_audio.GetCached()) )
+      {
+        OMXClock::OMXSleep(10);
+        continue;
+      }
+      if (!m_send_eos && m_has_video)
+        m_player_video.SubmitEOS();
+      if (!m_send_eos && m_has_audio)
+        m_player_audio.SubmitEOS();
+      m_send_eos = true;
+      if ( (m_has_video && !m_player_video.IsEOS()) ||
+           (m_has_audio && !m_player_audio.IsEOS()) )
+      {
+        OMXClock::OMXSleep(10);
+        continue;
+      }
+      // End of stream
+      m_done = true;
+      CLog::Log(LOGDEBUG, "Bum done");
+
+      // If we're not ending, break here and close the player. Otherwise, don't break and keep looping around 
+      if (!m_end_paused)
+      {
+        break;
+      }
+    }
+    else
+      m_done = false;
+
+
     if(m_loop && m_omx_reader.IsEof() && !m_omx_pkt)
     {
       // demuxer EOF, but may have not played out data yet
@@ -1865,40 +1899,6 @@ int main(int argc, char *argv[])
       }
       last_packet_duration = m_omx_pkt->duration;
     }      
-
-    if(m_omx_reader.IsEof() && !m_omx_pkt)
-    {
-      // demuxer EOF, but may have not played out data yet
-      if ( (m_has_video && m_player_video.GetCached()) ||
-           (m_has_audio && m_player_audio.GetCached()) )
-      {
-        OMXClock::OMXSleep(10);
-        continue;
-      }
-      if (!m_send_eos && m_has_video)
-        m_player_video.SubmitEOS();
-      if (!m_send_eos && m_has_audio)
-        m_player_audio.SubmitEOS();
-      m_send_eos = true;
-      if ( (m_has_video && !m_player_video.IsEOS()) ||
-           (m_has_audio && !m_player_audio.IsEOS()) )
-      {
-        OMXClock::OMXSleep(10);
-        continue;
-      }
-      // End of stream
-      m_done = true;
-      CLog::Log(LOGDEBUG, "Bum done");
-
-      // If we're not ending, break here and close the player. Otherwise, don't break and keep looping around 
-      if (!m_end_paused)
-      {
-        break;
-      }
-    }
-    else
-      m_done = false;
-
 
     if(m_has_video && m_omx_pkt && m_omx_reader.IsActive(OMXSTREAM_VIDEO, m_omx_pkt->stream_index))
     {

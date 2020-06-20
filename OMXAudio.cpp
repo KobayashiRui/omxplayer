@@ -834,7 +834,7 @@ bool COMXAudio::ApplyVolume(void)
               CLASSNAME, __func__, omx_err);
     return false;
   }
-  CLog::Log(LOGINFO, "%s::%s - Volume=%.2f (* %.2f * %.2f)\n", CLASSNAME, __func__, fVolume, m_amplification, m_attenuation);
+  // CLog::Log(LOGINFO, "%s::%s - Volume=%.2f (* %.2f * %.2f)\n", CLASSNAME, __func__, fVolume, m_amplification, m_attenuation);
   return true;
 }
 
