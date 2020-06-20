@@ -1478,8 +1478,6 @@ int main(int argc, char *argv[])
           }
           if(new_layer == playing_layer)
           {
-            // Need a slight delay to allow player to change layer. Experimentation found this works
-            OMXClock::OMXSleep(30); 
             m_Pause=false;
           }
           break;
