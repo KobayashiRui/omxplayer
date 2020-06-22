@@ -1442,10 +1442,10 @@ int main(int argc, char *argv[])
         goto do_exit;
         break;
       case KeyConfig::ACTION_SEEK_BACK_SMALL:
-        if(m_omx_reader.CanSeek()) m_incr = -30.0;
+        if(m_omx_reader.CanSeek()) m_incr = -1.0;
         break;
       case KeyConfig::ACTION_SEEK_FORWARD_SMALL:
-        if(m_omx_reader.CanSeek()) m_incr = 30.0;
+        if(m_omx_reader.CanSeek()) m_incr = 1.0;
         break;
       case KeyConfig::ACTION_SEEK_FORWARD_LARGE:
         if(m_omx_reader.CanSeek()) m_incr = 600.0;
@@ -1790,6 +1790,7 @@ int main(int argc, char *argv[])
             m_Pause=true;
             OMXClock::OMXSleep(100); // Need a small sleep before step (for whatever reason)
             m_av_clock->OMXStep();
+            m_av_clock->OMXStep();
           } 
         }
       }
@@ -1861,7 +1862,7 @@ int main(int argc, char *argv[])
         continue;
       }
       CLog::Log(LOGINFO, "EOF detected; looping requested");
-      m_omx_reader.SeekTime(0, AVSEEK_FLAG_BACKWARD, &startpts);
+      m_omx_reader.SeekTime(0, true, &startpts);
       m_omx_pkt = m_omx_reader.Read();
 
       if(m_omx_pkt && last_packet_pts != DVD_NOPTS_VALUE) 
