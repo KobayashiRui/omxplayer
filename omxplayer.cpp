@@ -1438,6 +1438,7 @@ int main(int argc, char *argv[])
         }
         break;
       case KeyConfig::ACTION_EXIT:
+        FlushStreams(startpts);
         m_stop = true;
         goto do_exit;
         break;
