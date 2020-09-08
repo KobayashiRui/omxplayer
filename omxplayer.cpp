@@ -1841,7 +1841,7 @@ int main(int argc, char *argv[])
       }
       // End of stream
       m_done = true;
-      CLog::Log(LOGDEBUG, "Bum done");
+      // CLog::Log(LOGDEBUG, "Bum done");
 
       // If we're not ending, break here and close the player. Otherwise, don't break and keep looping around 
       if (!m_end_paused)
